@@ -111,7 +111,7 @@ const Calendar = ({ classes, studyPlan, weekDates, hours, getHour, isClassOnDay 
                       overflow: "hidden",
                     }}
                   >
-                    {s.topic} {/* topic name */}
+                    {s.topic} {/* topic name please*/}
                   </div>
                 ))}
               </div>
