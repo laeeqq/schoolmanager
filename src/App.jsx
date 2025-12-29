@@ -95,6 +95,29 @@ function App() {
     console.log("Generated Study Plan:", plan); // <- check the data
   }
 
+  //Function to add final exams and generate a study plan
+  function addExam(){
+    if(!examDate || topicsList.length == 0){
+      alert("Add exam date and topics first");
+      return;
+    }
+
+    //add final exam 
+    const examEvent = {
+      name: "Final Exam",
+      date: examDate,
+      time: "09:00",
+      endTime: "12:00",
+
+    };
+    setClasses([...classes,examEvent]);
+
+    const plan =generateStudyPlan(examDate,topicsList);
+    setStudyPlan(plan);
+
+    console.log("Exam added and study plan generated");
+  }
+
   // Helper function: get hour from time string "HH:MM"
   const getHour = (timeStr) => parseInt(timeStr.split(":")[0]); // split by ":" and take first part
 
@@ -139,6 +162,7 @@ function App() {
 
       {/* Generate study plan */}
       <button onClick={generateFinalStudyPlan}>Generate Study Plan</button>
+      <button onClick={addExam}>Add Final Exam & Generate Study Plan</button>
 
       <h2>Weekly Calendar</h2>
       <Calendar

@@ -17,7 +17,9 @@ export function generateStudyPlan(examDate, topics) {
   topics.forEach((topicObj) => {
     const { topic, hoursNeeded } = topicObj; // fixed variable name
 
-    for (let i = 0; i < hoursNeeded; i++) {
+    let hoursLeft = hoursNeeded;
+    while (hoursLeft > 0 && currentDate < exam) {
+      // assign hours per day (you can adjust how many per day, here 1)
       const formatDate = currentDate.toISOString().split("T")[0];
 
       studyPlan.push({
@@ -30,7 +32,7 @@ export function generateStudyPlan(examDate, topics) {
 
       currentDate.setDate(currentDate.getDate() + 1); // move to next day
 
-      if (currentDate >= exam) {
+      if (currentDate > exam) {
         break;
       }
     }

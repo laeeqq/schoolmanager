@@ -42,8 +42,9 @@ const Calendar = ({ classes, studyPlan, weekDates, hours, getHour, isClassOnDay 
             );
 
             // Study sessions scheduled at this hour
+            const localDate = d.toLocaleDateString("en-CA"); // YYYY-MM-DD
             const studyAtThisCell = studyPlan.filter(
-              (s) => s.date === d.toISOString().split("T")[0] && s.startHour === hour
+              (s) => s.date === localDate && s.startHour === hour
             );
 
             return (
