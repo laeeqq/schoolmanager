@@ -19,6 +19,10 @@ function App() {
   const [topicsList, setTopicsList] = useState([]); // array of topics for exam
   const [studyPlan, setStudyPlan] = useState([]); // generated study plan array
 
+
+  const [examStartTime, setExamStartTime] = useState(""); // exam start time
+  const [examEndTime, setExamEndTime] = useState(""); // exam end time
+
   // State for current week (start date of the week)
   const [currentWeekStart, setCurrentWeekStart] = useState(() => {
     const today = new Date();
