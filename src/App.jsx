@@ -110,8 +110,8 @@ function App() {
     const examEvent = {
       name: "Final Exam",
       date: examDate,
-      time: "09:00",
-      endTime: "12:00",
+      time: examStartTime,
+      endTime: examEndTime,
 
     };
     setClasses([...classes,examEvent]);
@@ -151,9 +151,16 @@ function App() {
       {/* Input fields for adding exam topics */}
       <h2>Exam Topics</h2>
       <input type="date" value={examDate} onChange={(e) => setExamDate(e.target.value)} />
+      
+      <input type="time" value={examStartTime} onChange={(e) => setExamStartTime(e.target.value)} />
+      <input type="time" value={examEndTime} onChange={(e) => setExamEndTime(e.target.value)} />
+
+      
       <input type="text" placeholder="Topic Name" value={topicsInput} onChange={(e) => setTopicsInput(e.target.value)} />
       <input type="number" placeholder="Hours Needed" value={hoursNeeded} onChange={(e) => setHoursNeeded(e.target.value)} />
       <button onClick={addTopic}>Add Topic</button> {/* add topic button */}
+
+      
 
       {/* Display topics list */}
       <ul>
