@@ -19,7 +19,6 @@ function App() {
   const [topicsList, setTopicsList] = useState([]); // array of topics for exam
   const [studyPlan, setStudyPlan] = useState([]); // generated study plan array
 
-
   const [examStartTime, setExamStartTime] = useState(""); // exam start time
   const [examEndTime, setExamEndTime] = useState(""); // exam end time
 
@@ -60,19 +59,14 @@ function App() {
 
   // Function to add a new class
   function addClass() {
-    // Check that all required fields are filled
     if (!name || !date || !time || !endTime) {
       alert("Please fill all fields"); // alert user
       return;
     }
 
-    // Create a new class object with start and end time
     const newClass = { name, date, time, endTime };
-
-    // Add the new class to the existing classes list
     setClasses([...classes, newClass]); // update state
 
-    // Clear the input fields after adding
     setName("");
     setDate("");
     setTime("");
@@ -81,88 +75,85 @@ function App() {
 
   // Function to add topic for the study plan
   function addTopic() {
-    if (!topicsInput || !hoursNeeded) return; // skip if empty
-    setTopicsList([...topicsList, { topic: topicsInput, hoursNeeded: Number(hoursNeeded) }]); // add to list
-    setTopicsInput(""); // clear topic input
-    setHoursNeeded(""); // clear hours input
+    if (!topicsInput || !hoursNeeded) return;
+    setTopicsList([...topicsList, { topic: topicsInput, hoursNeeded: Number(hoursNeeded) }]);
+    setTopicsInput("");
+    setHoursNeeded("");
   }
 
   // Function to generate the study plan
   function generateFinalStudyPlan() {
     if (!examDate || topicsList.length === 0) {
-      alert("Add exam date and topics first!"); // validation
+      alert("Add exam date and topics first!");
       return;
     }
 
-    const plan = generateStudyPlan(examDate, topicsList); // generate plan
-    setStudyPlan(plan); // save in state
-    console.log("Generated Study Plan:", plan); // <- check the data
+    const plan = generateStudyPlan(examDate, topicsList);
+    setStudyPlan(plan);
   }
 
-  //Function to add final exams and generate a study plan
-  function addExam(){
-    if(!examDate || topicsList.length == 0){
+  // Function to add final exams and generate a study plan
+  function addExam() {
+    if (!examDate || topicsList.length === 0) {
       alert("Add exam date and topics first");
       return;
     }
 
-    //add final exam 
     const examEvent = {
       name: "Final Exam",
       date: examDate,
       time: examStartTime,
       endTime: examEndTime,
-
     };
-    setClasses([...classes,examEvent]);
 
-    const plan =generateStudyPlan(examDate,topicsList);
+    setClasses([...classes, examEvent]);
+
+    const plan = generateStudyPlan(examDate, topicsList);
     setStudyPlan(plan);
-
-    console.log("Exam added and study plan generated");
   }
 
-  // Helper function: get hour from time string "HH:MM"
-  const getHour = (timeStr) => parseInt(timeStr.split(":")[0]); // split by ":" and take first part
+  const getHour = (timeStr) => parseInt(timeStr.split(":")[0]);
 
-  // Helper function: check if a class/study session is on this day
-  const isClassOnDay = (c, date) => {
-    return new Date(c.date).toDateString() === date.toDateString();
-  };
+  const isClassOnDay = (c, date) =>
+    new Date(c.date).toDateString() === date.toDateString();
 
   return (
     <>
-      <h1>My School Manager</h1> {/* App title */}
+      <h1>My School Manager</h1>
 
-      {/* Week navigation */}
       <div>
-        <button onClick={prevWeek}>Previous Week</button> {/* previous week */}
-        <button onClick={nextWeek}>Next Week</button> {/* next week */}
+        <button onClick={prevWeek}>Previous Week</button>
+        <button onClick={nextWeek}>Next Week</button>
       </div>
 
-      {/* Input fields for adding a class */}
       <h2>Add a Class</h2>
       <input type="text" placeholder="Class Name" value={name} onChange={(e) => setName(e.target.value)} />
       <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
       <input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
       <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
-      <button onClick={addClass}>Add Class</button> {/* add class button */}
+      <button onClick={addClass}>Add Class</button>
 
-      {/* Input fields for adding exam topics */}
       <h2>Exam Topics</h2>
-      <input type="date" value={examDate} onChange={(e) => setExamDate(e.target.value)} />
-      
-      <input type="time" value={examStartTime} onChange={(e) => setExamStartTime(e.target.value)} />
-      <input type="time" value={examEndTime} onChange={(e) => setExamEndTime(e.target.value)} />
 
-      
+      <div>
+        <label>Exam Date</label><br />
+        <input type="date" value={examDate} onChange={(e) => setExamDate(e.target.value)} />
+      </div>
+
+      <div>
+        <label>Exam Start Time</label><br />
+        <input type="time" value={examStartTime} onChange={(e) => setExamStartTime(e.target.value)} />
+      </div>
+
+      <div>
+        <label>Exam End Time</label><br />
+        <input type="time" value={examEndTime} onChange={(e) => setExamEndTime(e.target.value)} />
+      </div>
+
       <input type="text" placeholder="Topic Name" value={topicsInput} onChange={(e) => setTopicsInput(e.target.value)} />
       <input type="number" placeholder="Hours Needed" value={hoursNeeded} onChange={(e) => setHoursNeeded(e.target.value)} />
-      <button onClick={addTopic}>Add Topic</button> {/* add topic button */}
+      <button onClick={addTopic}>Add Topic</button>
 
-      
-
-      {/* Display topics list */}
       <ul>
         {topicsList.map((t, idx) => (
           <li key={idx}>
@@ -171,7 +162,6 @@ function App() {
         ))}
       </ul>
 
-      {/* Generate study plan */}
       <button onClick={generateFinalStudyPlan}>Generate Study Plan</button>
       <button onClick={addExam}>Add Final Exam & Generate Study Plan</button>
 
