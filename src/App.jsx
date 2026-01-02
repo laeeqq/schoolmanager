@@ -75,30 +75,29 @@ function App() {
 
   // Function to add topic for the study plan
   function addTopic() {
-    if (!topicsInput || !hoursNeeded) return;
-    setTopicsList([...topicsList, { topic: topicsInput, hoursNeeded: Number(hoursNeeded) }]);
-    setTopicsInput("");
-    setHoursNeeded("");
+    if (!topicsInput || !hoursNeeded) return; // skip if empty
+
+    setTopicsList([
+      ...topicsList,
+      { topic: topicsInput, hoursNeeded: Number(hoursNeeded) },
+    ]); // add topic to list
+
+    setTopicsInput(""); // clear topic input
+    setHoursNeeded(""); // clear hours input
   }
 
-  // Function to generate the study plan
-  function generateFinalStudyPlan() {
-    if (!examDate || topicsList.length === 0) {
-      alert("Add exam date and topics first!");
-      return;
-    }
-
-    const plan = generateStudyPlan(examDate, topicsList);
-    setStudyPlan(plan);
-  }
+  // NOTE:
+  // Removed "generateFinalStudyPlan" function
+  // because the study plan is generated when adding the final exam
 
   // Function to add final exams and generate a study plan
   function addExam() {
     if (!examDate || topicsList.length === 0) {
-      alert("Add exam date and topics first");
+      alert("Add exam date and topics first"); // validation
       return;
     }
 
+    // Add final exam block
     const examEvent = {
       name: "Final Exam",
       date: examDate,
@@ -106,14 +105,17 @@ function App() {
       endTime: examEndTime,
     };
 
-    setClasses([...classes, examEvent]);
+    setClasses([...classes, examEvent]); // add exam to calendar
 
+    // Generate study plan
     const plan = generateStudyPlan(examDate, topicsList);
     setStudyPlan(plan);
   }
 
+  // Helper function: get hour from time string "HH:MM"
   const getHour = (timeStr) => parseInt(timeStr.split(":")[0]);
 
+  // Helper function: check if a class/study session is on this day
   const isClassOnDay = (c, date) =>
     new Date(c.date).toDateString() === date.toDateString();
 
@@ -121,37 +123,80 @@ function App() {
     <>
       <h1>My School Manager</h1>
 
+      {/* Week navigation */}
       <div>
         <button onClick={prevWeek}>Previous Week</button>
         <button onClick={nextWeek}>Next Week</button>
       </div>
 
+      {/* Add class section */}
       <h2>Add a Class</h2>
-      <input type="text" placeholder="Class Name" value={name} onChange={(e) => setName(e.target.value)} />
-      <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-      <input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
-      <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+      <input
+        type="text"
+        placeholder="Class Name"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <input
+        type="date"
+        value={date}
+        onChange={(e) => setDate(e.target.value)}
+      />
+      <input
+        type="time"
+        value={time}
+        onChange={(e) => setTime(e.target.value)}
+      />
+      <input
+        type="time"
+        value={endTime}
+        onChange={(e) => setEndTime(e.target.value)}
+      />
       <button onClick={addClass}>Add Class</button>
 
-      <h2>Exam Topics</h2>
+      {/* Final exam section */}
+      <h2>Final Exam</h2>
 
-      <div>
-        <label>Exam Date</label><br />
-        <input type="date" value={examDate} onChange={(e) => setExamDate(e.target.value)} />
-      </div>
+      <label>Exam Date</label><br />
+      <input
+        type="date"
+        value={examDate}
+        onChange={(e) => setExamDate(e.target.value)}
+      />
 
-      <div>
-        <label>Exam Start Time</label><br />
-        <input type="time" value={examStartTime} onChange={(e) => setExamStartTime(e.target.value)} />
-      </div>
+      <br /><br />
 
-      <div>
-        <label>Exam End Time</label><br />
-        <input type="time" value={examEndTime} onChange={(e) => setExamEndTime(e.target.value)} />
-      </div>
+      <label>Exam Start Time</label><br />
+      <input
+        type="time"
+        value={examStartTime}
+        onChange={(e) => setExamStartTime(e.target.value)}
+      />
 
-      <input type="text" placeholder="Topic Name" value={topicsInput} onChange={(e) => setTopicsInput(e.target.value)} />
-      <input type="number" placeholder="Hours Needed" value={hoursNeeded} onChange={(e) => setHoursNeeded(e.target.value)} />
+      <br /><br />
+
+      <label>Exam End Time</label><br />
+      <input
+        type="time"
+        value={examEndTime}
+        onChange={(e) => setExamEndTime(e.target.value)}
+      />
+
+      {/* Study topics */}
+      <h3>Study Topics</h3>
+
+      <input
+        type="text"
+        placeholder="Topic Name"
+        value={topicsInput}
+        onChange={(e) => setTopicsInput(e.target.value)}
+      />
+      <input
+        type="number"
+        placeholder="Hours Needed"
+        value={hoursNeeded}
+        onChange={(e) => setHoursNeeded(e.target.value)}
+      />
       <button onClick={addTopic}>Add Topic</button>
 
       <ul>
@@ -162,8 +207,10 @@ function App() {
         ))}
       </ul>
 
-      <button onClick={generateFinalStudyPlan}>Generate Study Plan</button>
-      <button onClick={addExam}>Add Final Exam & Generate Study Plan</button>
+      {/* Single action button (clean UI) */}
+      <button onClick={addExam}>
+        Add Final Exam & Generate Study Plan
+      </button>
 
       <h2>Weekly Calendar</h2>
       <Calendar
