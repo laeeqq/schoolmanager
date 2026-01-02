@@ -1,6 +1,7 @@
 import React, { useState } from "react"; // import React so <React.Fragment> works
 import { generateStudyPlan } from "./schedule"; // import the logic for generating study blocks
 import Calendar from "./Calender"; // import calendar component
+import { type } from "node:os";
 
 function App() {
   // Store all added classes in a list
@@ -73,6 +74,20 @@ function App() {
     setEndTime("");
   }
 
+  // Helper function: calculate duration in hours from start & end time
+function calculateDuration(startTime, endTime) {
+  const [startH, startM] = startTime.split(":").map(Number);
+  const [endH, endM] = endTime.split(":").map(Number);
+
+  const startTotalMinutes = startH * 60 + startM;
+  const endTotalMinutes = endH * 60 + endM;
+
+  return (endTotalMinutes - startTotalMinutes) / 60;
+}
+
+
+
+
   // Function to add topic for the study plan
   function addTopic() {
     if (!topicsInput || !hoursNeeded) return; // skip if empty
@@ -86,9 +101,7 @@ function App() {
     setHoursNeeded(""); // clear hours input
   }
 
-  // NOTE:
-  // Removed "generateFinalStudyPlan" function
-  // because the study plan is generated when adding the final exam
+  
 
   // Function to add final exams and generate a study plan
   function addExam() {
@@ -97,12 +110,15 @@ function App() {
       return;
     }
 
+    const examDuration = calculateDuration(examStartTime, examEndTime);
+
     // Add final exam block
     const examEvent = {
       name: "Final Exam",
+      type: "exam",
       date: examDate,
       time: examStartTime,
-      endTime: examEndTime,
+      duration: examDuration,
     };
 
     setClasses([...classes, examEvent]); // add exam to calendar
