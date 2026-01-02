@@ -1,7 +1,6 @@
 import React, { useState } from "react"; // import React so <React.Fragment> works
 import { generateStudyPlan } from "./schedule"; // import the logic for generating study blocks
 import Calendar from "./Calender"; // import calendar component
-import { type } from "node:os";
 
 function App() {
   // Store all added classes in a list
@@ -74,34 +73,24 @@ function App() {
     setEndTime("");
   }
 
-  // Helper function: calculate duration in hours from start & end time
-function calculateDuration(startTime, endTime) {
-  const [startH, startM] = startTime.split(":").map(Number);
-  const [endH, endM] = endTime.split(":").map(Number);
-
-  const startTotalMinutes = startH * 60 + startM;
-  const endTotalMinutes = endH * 60 + endM;
-
-  return (endTotalMinutes - startTotalMinutes) / 60;
-}
-
-
-
-
   // Function to add topic for the study plan
   function addTopic() {
-    if (!topicsInput || !hoursNeeded) return; // skip if empty
-
-    setTopicsList([
-      ...topicsList,
-      { topic: topicsInput, hoursNeeded: Number(hoursNeeded) },
-    ]); // add topic to list
-
-    setTopicsInput(""); // clear topic input
-    setHoursNeeded(""); // clear hours input
+    if (!topicsInput || !hoursNeeded) return;
+    setTopicsList([...topicsList, { topic: topicsInput, hoursNeeded: Number(hoursNeeded) }]);
+    setTopicsInput("");
+    setHoursNeeded("");
   }
 
-  
+  // Function to generate the study plan
+  function generateFinalStudyPlan() {
+    if (!examDate || topicsList.length === 0) {
+      alert("Add exam date and topics first!"); // validation
+      return;
+    }
+
+    const plan = generateStudyPlan(examDate, topicsList); // generate study blocks
+    setStudyPlan(plan); // save in state
+  }
 
   // Function to add final exams and generate a study plan
   function addExam() {
@@ -110,21 +99,17 @@ function calculateDuration(startTime, endTime) {
       return;
     }
 
-    const examDuration = calculateDuration(examStartTime, examEndTime);
-
-    // Add final exam block
+    // Create exam event from user input
     const examEvent = {
-      name: "Final Exam",
-      type: "exam",
-      date: examDate,
-      time: examStartTime,
-      duration: examDuration,
+      name: "Final Exam",      // type of event
+      date: examDate,          // date input
+      time: examStartTime,     // user-defined start
+      endTime: examEndTime,    // user-defined end
     };
 
     setClasses([...classes, examEvent]); // add exam to calendar
 
-    // Generate study plan
-    const plan = generateStudyPlan(examDate, topicsList);
+    const plan = generateStudyPlan(examDate, topicsList); // generate study plan
     setStudyPlan(plan);
   }
 
@@ -137,7 +122,7 @@ function calculateDuration(startTime, endTime) {
 
   return (
     <>
-      <h1>My School Manager</h1>
+      <h1>My School Manager</h1> {/* App title */}
 
       {/* Week navigation */}
       <div>
@@ -145,76 +130,37 @@ function calculateDuration(startTime, endTime) {
         <button onClick={nextWeek}>Next Week</button>
       </div>
 
-      {/* Add class section */}
+      {/* Input fields for adding a class */}
       <h2>Add a Class</h2>
-      <input
-        type="text"
-        placeholder="Class Name"
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
-      <input
-        type="date"
-        value={date}
-        onChange={(e) => setDate(e.target.value)}
-      />
-      <input
-        type="time"
-        value={time}
-        onChange={(e) => setTime(e.target.value)}
-      />
-      <input
-        type="time"
-        value={endTime}
-        onChange={(e) => setEndTime(e.target.value)}
-      />
-      <button onClick={addClass}>Add Class</button>
+      <input type="text" placeholder="Class Name" value={name} onChange={(e) => setName(e.target.value)} />
+      <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+      <input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+      <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+      <button onClick={addClass}>Add Class</button> {/* add class button */}
 
-      {/* Final exam section */}
-      <h2>Final Exam</h2>
+      {/* Input fields for adding exam topics */}
+      <h2>Exam Topics</h2>
 
-      <label>Exam Date</label><br />
-      <input
-        type="date"
-        value={examDate}
-        onChange={(e) => setExamDate(e.target.value)}
-      />
+      <div>
+        <label>Exam Date</label><br />
+        <input type="date" value={examDate} onChange={(e) => setExamDate(e.target.value)} />
+      </div>
 
-      <br /><br />
+      <div>
+        <label>Exam Start Time</label><br />
+        <input type="time" value={examStartTime} onChange={(e) => setExamStartTime(e.target.value)} />
+      </div>
 
-      <label>Exam Start Time</label><br />
-      <input
-        type="time"
-        value={examStartTime}
-        onChange={(e) => setExamStartTime(e.target.value)}
-      />
+      <div>
+        <label>Exam End Time</label><br />
+        <input type="time" value={examEndTime} onChange={(e) => setExamEndTime(e.target.value)} />
+      </div>
 
-      <br /><br />
-
-      <label>Exam End Time</label><br />
-      <input
-        type="time"
-        value={examEndTime}
-        onChange={(e) => setExamEndTime(e.target.value)}
-      />
-
-      {/* Study topics */}
-      <h3>Study Topics</h3>
-
-      <input
-        type="text"
-        placeholder="Topic Name"
-        value={topicsInput}
-        onChange={(e) => setTopicsInput(e.target.value)}
-      />
-      <input
-        type="number"
-        placeholder="Hours Needed"
-        value={hoursNeeded}
-        onChange={(e) => setHoursNeeded(e.target.value)}
-      />
+      <input type="text" placeholder="Topic Name" value={topicsInput} onChange={(e) => setTopicsInput(e.target.value)} />
+      <input type="number" placeholder="Hours Needed" value={hoursNeeded} onChange={(e) => setHoursNeeded(e.target.value)} />
       <button onClick={addTopic}>Add Topic</button>
 
+      {/* Display topics list */}
       <ul>
         {topicsList.map((t, idx) => (
           <li key={idx}>
@@ -223,11 +169,10 @@ function calculateDuration(startTime, endTime) {
         ))}
       </ul>
 
-      {/* Single action button (clean UI) */}
-      <button onClick={addExam}>
-        Add Final Exam & Generate Study Plan
-      </button>
+      <button onClick={generateFinalStudyPlan}>Generate Study Plan</button>
+      <button onClick={addExam}>Add Final Exam & Generate Study Plan</button>
 
+      {/* Weekly Calendar */}
       <h2>Weekly Calendar</h2>
       <Calendar
         classes={classes}

@@ -8,7 +8,7 @@ export function generateStudyPlan(examDate, topics) {
   // Normalize exam date (remove time)
   exam.setHours(0, 0, 0, 0);
 
-  // For now we will go with the minimum study plan date of three weeks
+  // Minimum study plan date of three weeks before exam
   const DAYS_BEFORE_EXAMS = 23;
 
   // Create the starting date for the study period
@@ -18,7 +18,7 @@ export function generateStudyPlan(examDate, topics) {
   let currentDate = new Date(startDate);
 
   topics.forEach((topicObj) => {
-    const { topic, hoursNeeded } = topicObj;
+    const { topic, hoursNeeded } = topicObj; // extract topic and hours
 
     let hoursLeft = hoursNeeded;
 
@@ -27,17 +27,25 @@ export function generateStudyPlan(examDate, topics) {
       const studyDay = new Date(currentDate);
       studyDay.setHours(0, 0, 0, 0);
 
-      //  Stop if we reached the exam day or passed it
+      // Stop if we reached the exam day or passed it
       if (studyDay >= exam) break;
 
       const formattedDate = studyDay.toISOString().split("T")[0];
 
+      // Each study block has start time and end time
+      const startHour = 18; // fixed start time for now
+      const duration = 1; // 1 hour per block
+      const endHour = startHour + duration;
+      const startTime = `${startHour.toString().padStart(2, "0")}:00`;
+      const endTime = `${endHour.toString().padStart(2, "0")}:00`;
+
+      // Add the study block to the plan
       studyPlan.push({
-        type: "study",
-        topic: topic,
-        date: formattedDate,
-        startHour: 18, // fixed time for now
-        duration: 1,
+        type: "study",       // type of event
+        topic: topic,        // topic name
+        date: formattedDate, // date string
+        time: startTime,     // start time string
+        endTime: endTime,    // end time string
       });
 
       hoursLeft--; // reduce remaining hours
