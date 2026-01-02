@@ -5,6 +5,9 @@ export function generateStudyPlan(examDate, topics) {
   // Convert the exam date to a Date object
   const exam = new Date(examDate);
 
+  // Normalize exam date (remove time)
+  exam.setHours(0, 0, 0, 0);
+
   // For now we will go with the minimum study plan date of three weeks
   const DAYS_BEFORE_EXAMS = 23;
 
@@ -15,26 +18,30 @@ export function generateStudyPlan(examDate, topics) {
   let currentDate = new Date(startDate);
 
   topics.forEach((topicObj) => {
-    const { topic, hoursNeeded } = topicObj; // fixed variable name
+    const { topic, hoursNeeded } = topicObj;
 
     let hoursLeft = hoursNeeded;
-    while (hoursLeft > 0 && currentDate < exam) {
-      // assign hours per day (you can adjust how many per day, here 1)
-      const formatDate = currentDate.toISOString().split("T")[0];
+
+    // Schedule study ONLY before the exam day
+    while (hoursLeft > 0) {
+      const studyDay = new Date(currentDate);
+      studyDay.setHours(0, 0, 0, 0);
+
+      //  Stop if we reached the exam day or passed it
+      if (studyDay >= exam) break;
+
+      const formattedDate = studyDay.toISOString().split("T")[0];
 
       studyPlan.push({
         type: "study",
-        topic: topic, 
-        date: formatDate,
+        topic: topic,
+        date: formattedDate,
         startHour: 18, // fixed time for now
         duration: 1,
       });
 
+      hoursLeft--; // reduce remaining hours
       currentDate.setDate(currentDate.getDate() + 1); // move to next day
-
-      if (currentDate > exam) {
-        break;
-      }
     }
   });
 
