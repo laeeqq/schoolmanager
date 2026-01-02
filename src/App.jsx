@@ -75,10 +75,10 @@ function App() {
 
   // Function to add topic for the study plan
   function addTopic() {
-    if (!topicsInput || !hoursNeeded) return;
+    if (!topicsInput || !hoursNeeded) return; // skip if empty
     setTopicsList([...topicsList, { topic: topicsInput, hoursNeeded: Number(hoursNeeded) }]);
-    setTopicsInput("");
-    setHoursNeeded("");
+    setTopicsInput(""); // clear topic input
+    setHoursNeeded(""); // clear hours input
   }
 
   // Function to generate the study plan
@@ -88,8 +88,18 @@ function App() {
       return;
     }
 
-    const plan = generateStudyPlan(examDate, topicsList); // generate study blocks
+    const plan = generateStudyPlan(examDate, topicsList); // generate study plan with times
     setStudyPlan(plan); // save in state
+
+    // Automatically jump to the first week of the study plan
+    if (plan.length > 0) {
+      const firstStudyDate = new Date(plan[0].date);
+      const day = firstStudyDate.getDay();
+      const diffToMonday = day === 0 ? -6 : 1 - day; // get Monday of that week
+      const monday = new Date(firstStudyDate);
+      monday.setDate(firstStudyDate.getDate() + diffToMonday);
+      setCurrentWeekStart(monday); // show first week
+    }
   }
 
   // Function to add final exams and generate a study plan
@@ -99,18 +109,27 @@ function App() {
       return;
     }
 
-    // Create exam event from user input
     const examEvent = {
-      name: "Final Exam",      // type of event
-      date: examDate,          // date input
-      time: examStartTime,     // user-defined start
-      endTime: examEndTime,    // user-defined end
+      name: "Final Exam", // name of the event
+      date: examDate,     // exam date
+      time: examStartTime, // exam start time
+      endTime: examEndTime, // exam end time
     };
 
-    setClasses([...classes, examEvent]); // add exam to calendar
+    setClasses([...classes, examEvent]); // add exam to classes
 
     const plan = generateStudyPlan(examDate, topicsList); // generate study plan
-    setStudyPlan(plan);
+    setStudyPlan(plan); // save in state
+
+    // Jump to first week of study plan
+    if (plan.length > 0) {
+      const firstStudyDate = new Date(plan[0].date);
+      const day = firstStudyDate.getDay();
+      const diffToMonday = day === 0 ? -6 : 1 - day;
+      const monday = new Date(firstStudyDate);
+      monday.setDate(firstStudyDate.getDate() + diffToMonday);
+      setCurrentWeekStart(monday); // show first week
+    }
   }
 
   // Helper function: get hour from time string "HH:MM"
@@ -126,8 +145,8 @@ function App() {
 
       {/* Week navigation */}
       <div>
-        <button onClick={prevWeek}>Previous Week</button>
-        <button onClick={nextWeek}>Next Week</button>
+        <button onClick={prevWeek}>Previous Week</button> {/* previous week */}
+        <button onClick={nextWeek}>Next Week</button> {/* next week */}
       </div>
 
       {/* Input fields for adding a class */}
@@ -158,29 +177,30 @@ function App() {
 
       <input type="text" placeholder="Topic Name" value={topicsInput} onChange={(e) => setTopicsInput(e.target.value)} />
       <input type="number" placeholder="Hours Needed" value={hoursNeeded} onChange={(e) => setHoursNeeded(e.target.value)} />
-      <button onClick={addTopic}>Add Topic</button>
+      <button onClick={addTopic}>Add Topic</button> {/* add topic button */}
 
       {/* Display topics list */}
       <ul>
         {topicsList.map((t, idx) => (
           <li key={idx}>
-            {t.topic} — {t.hoursNeeded} hour(s)
+            {t.topic} — {t.hoursNeeded} hour(s) {/* show topic and hours */}
           </li>
         ))}
       </ul>
 
+      {/* Generate study plan */}
       <button onClick={generateFinalStudyPlan}>Generate Study Plan</button>
       <button onClick={addExam}>Add Final Exam & Generate Study Plan</button>
 
       {/* Weekly Calendar */}
       <h2>Weekly Calendar</h2>
       <Calendar
-        classes={classes}
-        studyPlan={studyPlan}
-        weekDates={weekDates}
-        hours={hours}
-        getHour={getHour}
-        isClassOnDay={isClassOnDay}
+        classes={classes} // all regular classes + final exam
+        studyPlan={studyPlan} // generated study blocks
+        weekDates={weekDates} // current week dates
+        hours={hours} // hours 0-23
+        getHour={getHour} // helper to get hour
+        isClassOnDay={isClassOnDay} // helper to check if class is on this day
       />
     </>
   );
