@@ -83,24 +83,25 @@ function App() {
 
   // Function to generate the study plan
   function generateFinalStudyPlan() {
-    if (!examDate || topicsList.length === 0) {
-      alert("Add exam date and topics first!"); // validation
-      return;
-    }
-
-    const plan = generateStudyPlan(examDate, topicsList); // generate study plan with times
-    setStudyPlan(plan); // save in state
-
-    // Automatically jump to the first week of the study plan
-    if (plan.length > 0) {
-      const firstStudyDate = new Date(plan[0].date);
-      const day = firstStudyDate.getDay();
-      const diffToMonday = day === 0 ? -6 : 1 - day; // get Monday of that week
-      const monday = new Date(firstStudyDate);
-      monday.setDate(firstStudyDate.getDate() + diffToMonday);
-      setCurrentWeekStart(monday); // show first week
-    }
+  if (!examDate || topicsList.length === 0) {
+    alert("Add exam date and topics first!");
+    return;
   }
+
+  // Generate full 3-week study plan
+  const plan = generateStudyPlan(examDate, topicsList);
+  setStudyPlan(plan);
+
+  // Automatically jump calendar to first study day
+  if (plan.length > 0) {
+    const firstStudyDate = new Date(plan[0].date);
+    const day = firstStudyDate.getDay();
+    const diffToMonday = day === 0 ? -6 : 1 - day;
+    const monday = new Date(firstStudyDate);
+    monday.setDate(firstStudyDate.getDate() + diffToMonday);
+    setCurrentWeekStart(monday); // <-- ensures first week is visible
+  }
+}
 
   // Function to add final exams and generate a study plan
   function addExam() {
