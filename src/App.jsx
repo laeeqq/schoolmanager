@@ -81,31 +81,31 @@ function App() {
 
   // ───────── Generate study plan ONLY ─────────
   function generateFinalStudyPlan() {
-    if (!examDate || topicsList.length === 0) {
-      alert("Add exam date and topics first!");
-      return;
-    }
-
-    const plan = generateStudyPlan(examDate, topicsList);
-    setStudyPlan(plan);
-
-    // 🔑 Auto-jump calendar to first study day
-    if (plan.length > 0) {
-      const firstDay = plan[0].date.split("-");
-      const d = new Date(
-        Number(firstDay[0]),
-        Number(firstDay[1]) - 1,
-        Number(firstDay[2])
-      );
-
-      // move to Monday of that week
-      const day = d.getDay();
-      const diffToMonday = day === 0 ? -6 : 1 - day;
-      d.setDate(d.getDate() + diffToMonday);
-
-      setCurrentWeekStart(d);
-    }
+  if (!examDate || topicsList.length === 0) {
+    alert("Add exam date and topics first!");
+    return;
   }
+
+  const plan = generateStudyPlan(examDate, topicsList);
+  setStudyPlan(plan);
+
+  // 🔑 Jump to first study week
+  if (plan.length > 0) {
+    const firstDay = plan[0].date.split("-");
+    const d = new Date(
+      Number(firstDay[0]),
+      Number(firstDay[1]) - 1,
+      Number(firstDay[2])
+    );
+
+    const day = d.getDay();
+    const diffToMonday = day === 0 ? -6 : 1 - day;
+    d.setDate(d.getDate() + diffToMonday);
+
+    setCurrentWeekStart(d);
+  }
+}
+
 
   // ───────── Add final exam ONLY ─────────
   function addFinalExam() {
