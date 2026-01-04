@@ -2,42 +2,46 @@
 export function generateStudyPlan(examDate, topics) {
   const studyPlan = [];
 
-  // Convert the exam date STRING into a LOCAL Date object (NO timezone shift)
+  // Convert exam date string → parts (timezone safe)
   const parts = examDate.split("-");
   const exam = new Date(
-    Number(parts[0]),        // year
-    Number(parts[1]) - 1,    // month (0-indexed)
-    Number(parts[2])         // day
+    Number(parts[0]),
+    Number(parts[1]) - 1,
+    Number(parts[2])
   );
-
-  // Normalize exam date (remove time)
-  exam.setHours(0, 0, 0, 0);
 
   // Minimum study period: 3 weeks
   const DAYS_BEFORE_EXAMS = 21;
 
   // Create the starting date for the study period
   const startDate = new Date(exam);
-  startDate.setDate(exam.getDate() - DAYS_BEFORE_EXAMS);
+  startDate.setDate(startDate.getDate() - DAYS_BEFORE_EXAMS);
 
+  // Expand topics into a queue based on hoursNeeded
+  const topicQueue = [];
+  for (let i = 0; i < topics.length; i++) {
+    for (let h = 0; h < topics[i].hoursNeeded; h++) {
+      topicQueue.push(topics[i].topic);
+    }
+  }
+
+  let topicIndex = 0;
   let currentDate = new Date(startDate);
 
   // Loop day by day until the day before the exam
-  while (currentDate < exam) {
-    // Format date as YYYY-MM-DD (LOCAL, not UTC)
+  while (currentDate < exam && topicIndex < topicQueue.length) {
     const y = currentDate.getFullYear();
     const m = String(currentDate.getMonth() + 1).padStart(2, "0");
     const d = String(currentDate.getDate()).padStart(2, "0");
-    const formattedDate = `${y}-${m}-${d}`;
 
-    // Create ONE all-day study block per day
     studyPlan.push({
       type: "study",
-      topic: topics.map(t => t.topic).join(", "), // show all topics for now
-      date: formattedDate,
-      allDay: true, // Google Calendar style
+      topic: topicQueue[topicIndex], // ONE topic per day
+      date: y + "-" + m + "-" + d,
+      allDay: true, // all-day study block
     });
 
+    topicIndex++;
     currentDate.setDate(currentDate.getDate() + 1);
   }
 
