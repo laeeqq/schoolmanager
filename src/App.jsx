@@ -48,10 +48,17 @@ function App() {
   // Helper functions
   const getHour = (timeStr) => parseInt(timeStr.split(":")[0]);
 
-  const isClassOnDay = (c, date) => {
-    if (!c || !c.date) return false;
-    return new Date(c.date).toDateString() === date.toDateString();
-  };
+  // Helper function: check if a class is on this day (NO timezone bugs)
+const isClassOnDay = (c, date) => {
+  if (!c || !c.date) return false;
+
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  const dayKey = y + "-" + m + "-" + d;
+
+  return c.date === dayKey;
+};
 
   // Add a class
   function addClass() {
@@ -79,7 +86,6 @@ function App() {
     }
     const plan = generateStudyPlan(examDate, topicsList);
     setStudyPlan(plan);
-    // ⚠️ Do not jump week
   }
 
   // Add final exam ONLY

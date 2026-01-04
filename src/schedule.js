@@ -2,8 +2,13 @@
 export function generateStudyPlan(examDate, topics) {
   const studyPlan = [];
 
-  // Convert the exam date to a Date object
-  const exam = new Date(examDate);
+  // Convert the exam date STRING into a LOCAL Date object (NO timezone shift)
+  const parts = examDate.split("-");
+  const exam = new Date(
+    Number(parts[0]),        // year
+    Number(parts[1]) - 1,    // month (0-indexed)
+    Number(parts[2])         // day
+  );
 
   // Normalize exam date (remove time)
   exam.setHours(0, 0, 0, 0);
@@ -19,7 +24,11 @@ export function generateStudyPlan(examDate, topics) {
 
   // Loop day by day until the day before the exam
   while (currentDate < exam) {
-    const formattedDate = currentDate.toISOString().split("T")[0];
+    // Format date as YYYY-MM-DD (LOCAL, not UTC)
+    const y = currentDate.getFullYear();
+    const m = String(currentDate.getMonth() + 1).padStart(2, "0");
+    const d = String(currentDate.getDate()).padStart(2, "0");
+    const formattedDate = `${y}-${m}-${d}`;
 
     // Create ONE all-day study block per day
     studyPlan.push({
