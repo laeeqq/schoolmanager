@@ -1,50 +1,101 @@
 import React from "react";
 
-// This component renders the weekly calendar grid with classes and study plan
-const Calendar = ({ classes, studyPlan, weekDates, hours, getHour, isClassOnDay }) => {
-  const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]; // weekday headers
+// Weekly calendar that supports:
+// 1️⃣ Hour-based events (classes)
+// 2️⃣ All-day events (study plan)
+const Calendar = ({
+  classes,
+  studyPlan,
+  weekDates,
+  hours,
+  getHour,
+  isClassOnDay,
+}) => {
+  const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
   return (
     <div
       style={{
         display: "grid",
-        gridTemplateColumns: "80px repeat(7, 1fr)", // 1 column for hours + 7 days
-        gridTemplateRows: `80px repeat(${hours.length}, 1fr)`, // header + hours
-        height: "80vh", // fill viewport height
-        width: "95vw", // almost full width
+        gridTemplateColumns: "80px repeat(7, 1fr)", // hours + 7 days
+        gridTemplateRows: `60px 60px repeat(${hours.length}, 1fr)`,
+        // ↑ header row + ALL DAY row + hours
+        height: "80vh",
+        width: "95vw",
         margin: "0 auto",
-        borderTop: "1px solid white",
-        borderLeft: "1px solid white",
-        position: "relative", // for absolute positioned blocks
+        border: "1px solid white",
       }}
     >
-      {/* First row: empty top-left + weekday headers */}
-      <div style={{ border: "1px solid white" }}></div>
-      {weekDays.map((day, idx) => (
-        <div key={day} style={{ border: "1px solid white", textAlign: "center" }}>
+      {/* ───────── HEADER ROW ───────── */}
+      <div></div>
+      {weekDays.map((day, i) => (
+        <div key={day} style={{ textAlign: "center", border: "1px solid white" }}>
           <strong>{day}</strong>
           <br />
-          {weekDates[idx].toLocaleDateString()} {/* show actual date */}
+          {weekDates[i].toLocaleDateString()}
         </div>
       ))}
 
-      {/* Rows for each hour */}
+      {/* ───────── ALL DAY ROW (STUDY BLOCKS) ───────── */}
+      <div
+        style={{
+          border: "1px solid gray",
+          textAlign: "center",
+          fontWeight: "bold",
+        }}
+      >
+        All Day
+      </div>
+
+      {weekDates.map((date, dayIndex) => {
+        const localDate = date.toLocaleDateString("en-CA");
+
+        // 🔑 Find ALL-DAY study blocks for this date
+        const studyBlocksToday = studyPlan.filter(
+          (s) => s.date === localDate && s.allDay
+        );
+
+        return (
+          <div
+            key={dayIndex}
+            style={{
+              border: "1px solid gray",
+              padding: "4px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "4px",
+            }}
+          >
+            {studyBlocksToday.map((s, idx) => (
+              <div
+                key={idx}
+                style={{
+                  backgroundColor: "lightgreen",
+                  border: "1px solid darkgreen",
+                  padding: "4px",
+                  fontSize: "12px",
+                  borderRadius: "4px",
+                }}
+              >
+                📘 {s.topic}
+              </div>
+            ))}
+          </div>
+        );
+      })}
+
+      {/* ───────── HOURLY GRID ───────── */}
       {hours.map((hour) => (
         <React.Fragment key={hour}>
-          <div style={{ border: "1px solid white", textAlign: "center" }}>
-            {hour}:00 {/* hour label */}
+          {/* Hour label */}
+          <div style={{ border: "1px solid gray", textAlign: "center" }}>
+            {hour}:00
           </div>
 
+          {/* Day cells */}
           {weekDates.map((d, dayIndex) => {
-            // Classes scheduled at this hour
             const classesAtThisCell = classes.filter(
               (c) => isClassOnDay(c, d) && getHour(c.time) === hour
-            );
-
-            // Study sessions scheduled at this hour
-            const localDate = d.toLocaleDateString("en-CA"); // YYYY-MM-DD
-            const studyAtThisCell = studyPlan.filter(
-              (s) => s.date === localDate && s.startHour === hour
             );
 
             return (
@@ -53,15 +104,15 @@ const Calendar = ({ classes, studyPlan, weekDates, hours, getHour, isClassOnDay 
                 style={{
                   border: "1px solid gray",
                   height: "40px",
-                  textAlign: "center",
                   position: "relative",
                 }}
               >
-                {/* Render class blocks */}
+                {/* Render classes only (study is all-day now) */}
                 {classesAtThisCell.map((c, idx) => {
                   const start = getHour(c.time);
                   const end = getHour(c.endTime);
-                  const rowSpan = end - start + 1; // span multiple hours
+                  const span = end - start + 1;
+
                   return (
                     <div
                       key={idx}
@@ -70,51 +121,17 @@ const Calendar = ({ classes, studyPlan, weekDates, hours, getHour, isClassOnDay 
                         top: 0,
                         left: 0,
                         width: "100%",
-                        height: `${rowSpan * 100}%`,
-                        backgroundColor: "blue",
-                        border: "1px solid black",
-                        boxSizing: "border-box",
-                        padding: "2px",
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "flex-start",
-                        alignItems: "flex-start",
+                        height: `${span * 100}%`,
+                        backgroundColor: "lightblue",
+                        border: "1px solid blue",
                         fontSize: "12px",
-                        color: "black", // class name in black
-                        overflow: "hidden",
+                        padding: "2px",
                       }}
                     >
-                      {c.name} {/* class name at top-left */}
+                      {c.name}
                     </div>
                   );
                 })}
-
-                {/* Render study blocks */}
-                {studyAtThisCell.map((s, idx) => (
-                  <div
-                    key={idx}
-                    style={{
-                      position: "absolute",
-                      top: 0,
-                      left: 0,
-                      width: "100%",
-                      height: `${s.duration * 100}%`,
-                      backgroundColor: "lightgreen",
-                      border: "1px solid darkgreen",
-                      boxSizing: "border-box",
-                      padding: "2px",
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "flex-start",
-                      alignItems: "flex-start",
-                      fontSize: "12px",
-                      color: "black",
-                      overflow: "hidden",
-                    }}
-                  >
-                    {s.topic} {/* topic name please*/}
-                  </div>
-                ))}
               </div>
             );
           })}

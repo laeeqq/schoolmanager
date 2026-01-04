@@ -55,6 +55,7 @@ function App() {
   });
 
   // Create an array of hours 0-23 for the grid rows
+  // ⚠️ Still used for classes/exams, NOT for study blocks
   const hours = Array.from({ length: 24 }, (_, i) => i); // generate numbers 0 to 23
 
   // Function to add a new class
@@ -76,32 +77,37 @@ function App() {
   // Function to add topic for the study plan
   function addTopic() {
     if (!topicsInput || !hoursNeeded) return; // skip if empty
-    setTopicsList([...topicsList, { topic: topicsInput, hoursNeeded: Number(hoursNeeded) }]);
+
+    setTopicsList([
+      ...topicsList,
+      { topic: topicsInput, hoursNeeded: Number(hoursNeeded) }
+    ]);
+
     setTopicsInput(""); // clear topic input
     setHoursNeeded(""); // clear hours input
   }
 
   // Function to generate the study plan
   function generateFinalStudyPlan() {
-  if (!examDate || topicsList.length === 0) {
-    alert("Add exam date and topics first!");
-    return;
-  }
+    if (!examDate || topicsList.length === 0) {
+      alert("Add exam date and topics first!");
+      return;
+    }
 
-  // Generate full 3-week study plan
-  const plan = generateStudyPlan(examDate, topicsList);
-  setStudyPlan(plan);
+    // Generate FULL 3-week ALL-DAY study plan
+    const plan = generateStudyPlan(examDate, topicsList);
+    setStudyPlan(plan);
 
-  // Automatically jump calendar to first study day
-  if (plan.length > 0) {
-    const firstStudyDate = new Date(plan[0].date);
-    const day = firstStudyDate.getDay();
-    const diffToMonday = day === 0 ? -6 : 1 - day;
-    const monday = new Date(firstStudyDate);
-    monday.setDate(firstStudyDate.getDate() + diffToMonday);
-    setCurrentWeekStart(monday); // <-- ensures first week is visible
+    // Jump calendar to the FIRST study day
+    if (plan.length > 0) {
+      const firstStudyDate = new Date(plan[0].date);
+      const day = firstStudyDate.getDay();
+      const diffToMonday = day === 0 ? -6 : 1 - day;
+      const monday = new Date(firstStudyDate);
+      monday.setDate(firstStudyDate.getDate() + diffToMonday);
+      setCurrentWeekStart(monday); // ensures visibility
+    }
   }
-}
 
   // Function to add final exams and generate a study plan
   function addExam() {
@@ -113,23 +119,23 @@ function App() {
     const examEvent = {
       name: "Final Exam", // name of the event
       date: examDate,     // exam date
-      time: examStartTime, // exam start time
-      endTime: examEndTime, // exam end time
+      allDay: true,
     };
 
     setClasses([...classes, examEvent]); // add exam to classes
 
-    const plan = generateStudyPlan(examDate, topicsList); // generate study plan
-    setStudyPlan(plan); // save in state
+    // Generate ALL-DAY study plan (3 weeks)
+    const plan = generateStudyPlan(examDate, topicsList);
+    setStudyPlan(plan);
 
-    // Jump to first week of study plan
+    // Jump to first study week
     if (plan.length > 0) {
       const firstStudyDate = new Date(plan[0].date);
       const day = firstStudyDate.getDay();
       const diffToMonday = day === 0 ? -6 : 1 - day;
       const monday = new Date(firstStudyDate);
       monday.setDate(firstStudyDate.getDate() + diffToMonday);
-      setCurrentWeekStart(monday); // show first week
+      setCurrentWeekStart(monday);
     }
   }
 
@@ -146,8 +152,8 @@ function App() {
 
       {/* Week navigation */}
       <div>
-        <button onClick={prevWeek}>Previous Week</button> {/* previous week */}
-        <button onClick={nextWeek}>Next Week</button> {/* next week */}
+        <button onClick={prevWeek}>Previous Week</button>
+        <button onClick={nextWeek}>Next Week</button>
       </div>
 
       {/* Input fields for adding a class */}
@@ -156,7 +162,7 @@ function App() {
       <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
       <input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
       <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
-      <button onClick={addClass}>Add Class</button> {/* add class button */}
+      <button onClick={addClass}>Add Class</button>
 
       {/* Input fields for adding exam topics */}
       <h2>Exam Topics</h2>
@@ -178,30 +184,29 @@ function App() {
 
       <input type="text" placeholder="Topic Name" value={topicsInput} onChange={(e) => setTopicsInput(e.target.value)} />
       <input type="number" placeholder="Hours Needed" value={hoursNeeded} onChange={(e) => setHoursNeeded(e.target.value)} />
-      <button onClick={addTopic}>Add Topic</button> {/* add topic button */}
+      <button onClick={addTopic}>Add Topic</button>
 
       {/* Display topics list */}
       <ul>
         {topicsList.map((t, idx) => (
           <li key={idx}>
-            {t.topic} — {t.hoursNeeded} hour(s) {/* show topic and hours */}
+            {t.topic} — {t.hoursNeeded} hour(s)
           </li>
         ))}
       </ul>
 
-      {/* Generate study plan */}
       <button onClick={generateFinalStudyPlan}>Generate Study Plan</button>
       <button onClick={addExam}>Add Final Exam & Generate Study Plan</button>
 
       {/* Weekly Calendar */}
       <h2>Weekly Calendar</h2>
       <Calendar
-        classes={classes} // all regular classes + final exam
-        studyPlan={studyPlan} // generated study blocks
-        weekDates={weekDates} // current week dates
-        hours={hours} // hours 0-23
-        getHour={getHour} // helper to get hour
-        isClassOnDay={isClassOnDay} // helper to check if class is on this day
+        classes={classes}       // timed events
+        studyPlan={studyPlan}   // ALL-DAY study blocks
+        weekDates={weekDates}
+        hours={hours}
+        getHour={getHour}
+        isClassOnDay={isClassOnDay}
       />
     </>
   );
