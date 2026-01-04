@@ -1,5 +1,4 @@
 // schedule.js
-// Generates a study plan with 1 block per day, rotating topics and respecting hours needed
 export function generateStudyPlan(examDate, topics) {
   const studyPlan = [];
 
@@ -12,41 +11,40 @@ export function generateStudyPlan(examDate, topics) {
   const startDate = new Date(exam);
   startDate.setDate(exam.getDate() - DAYS_BEFORE_EXAMS);
 
-  // Expand topics into "remaining hours" list
-  const topicQueue = topics.map(t => ({ topic: t.topic, hoursLeft: t.hoursNeeded }));
+  // Total study days
+  const totalDays = Math.ceil((exam - startDate) / (1000 * 60 * 60 * 24));
 
-  let currentDate = new Date(startDate);
-  let topicIndex = 0;
+  // Initialize topic trackers
+  const topicMap = topics.map(t => ({
+    topic: t.topic,
+    hoursLeft: t.hoursNeeded
+  }));
 
-  // Loop day by day until exam
-  while (currentDate < exam && topicQueue.some(t => t.hoursLeft > 0)) {
-    // Find next topic with hours left
-    let tries = 0;
-    while (topicQueue[topicIndex].hoursLeft === 0 && tries < topicQueue.length) {
-      topicIndex = (topicIndex + 1) % topicQueue.length;
-      tries++;
-    }
+  // Loop through each day and assign one topic per day
+  for (let dayOffset = 0; dayOffset < totalDays; dayOffset++) {
+    const currentDate = new Date(startDate);
+    currentDate.setDate(startDate.getDate() + dayOffset);
 
-    const currentTopic = topicQueue[topicIndex];
-    if (currentTopic.hoursLeft > 0) {
-      // Format date YYYY-MM-DD
-      const y = currentDate.getFullYear();
-      const m = String(currentDate.getMonth() + 1).padStart(2, "0");
-      const d = String(currentDate.getDate()).padStart(2, "0");
+    // Pick next topic with hours left (rotate)
+    const availableTopics = topicMap.filter(t => t.hoursLeft > 0);
+    if (availableTopics.length === 0) break; // all done
 
-      studyPlan.push({
-        type: "study",
-        topic: currentTopic.topic,
-        date: y + "-" + m + "-" + d,
-        allDay: true,
-      });
+    const topicIndex = dayOffset % availableTopics.length;
+    const currentTopic = availableTopics[topicIndex];
 
-      currentTopic.hoursLeft--; // reduce remaining hours
-      topicIndex = (topicIndex + 1) % topicQueue.length; // rotate to next topic
-    }
+    // Format date YYYY-MM-DD
+    const y = currentDate.getFullYear();
+    const m = String(currentDate.getMonth() + 1).padStart(2, "0");
+    const d = String(currentDate.getDate()).padStart(2, "0");
 
-    // Next day
-    currentDate.setDate(currentDate.getDate() + 1);
+    studyPlan.push({
+      type: "study",
+      topic: currentTopic.topic,
+      date: `${y}-${m}-${d}`,
+      allDay: true
+    });
+
+    currentTopic.hoursLeft--;
   }
 
   return studyPlan;

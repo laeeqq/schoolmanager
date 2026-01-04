@@ -75,7 +75,7 @@ const Calendar = ({ classes, studyPlan, weekDates, hours, getHour, isClassOnDay 
               <div
                 key={idx}
                 style={{
-                  backgroundColor: "#b7e4c7",
+                  backgroundColor: "#050033ff",
                   border: "1px solid #40916c",
                   padding: "4px",
                   fontSize: "12px",
