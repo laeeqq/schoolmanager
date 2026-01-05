@@ -1,8 +1,8 @@
 import React from "react";
 
 // Weekly calendar that supports:
-// 1️⃣ Hour-based events (classes, final exam)
-// 2️⃣ All-day events (study plan)
+// Hour-based events (classes, final exam)
+//  All-day events (study plan)
 const Calendar = ({ classes, studyPlan, weekDates, hours, getHour, isClassOnDay }) => {
   const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
@@ -53,7 +53,7 @@ const Calendar = ({ classes, studyPlan, weekDates, hours, getHour, isClassOnDay 
       </div>
 
       {weekDates.map((date, dayIndex) => {
-        const dayKey = toYMD(date); // 🔑 stable date key
+        const dayKey = toYMD(date); //  stable date key
 
         // All-day STUDY blocks only
         const studyBlocksToday = studyPlan.filter((s) => {

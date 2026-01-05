@@ -2,7 +2,7 @@
 export function generateStudyPlan(examDate, topics) {
   const studyPlan = [];
 
-  // Convert exam date string → parts (timezone safe)
+  // Convert exam date string  parts (timezone safe)
   const parts = examDate.split("-");
   const exam = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
 
