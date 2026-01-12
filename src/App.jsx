@@ -22,7 +22,7 @@ function App() {
   const [examStartTime, setExamStartTime] = useState("");
   const [examEndTime, setExamEndTime] = useState("");
   const [topicsInput, setTopicsInput] = useState("");
-  const [hoursNeeded, setHoursNeeded] = useState("");
+  const [priority, setPriority] = useState("");
 
   // State for current week
   const [currentWeekStart, setCurrentWeekStart] = useState(() => {
@@ -74,38 +74,37 @@ function App() {
 
   // ───────── Add a topic ─────────
   function addTopic() {
-    if (!topicsInput || !hoursNeeded) return;
-    setTopicsList(topicsList.concat({ topic: topicsInput, hoursNeeded: Number(hoursNeeded) }));
-    setTopicsInput(""); setHoursNeeded("");
+    if (!topicsInput || !priority) return;
+    setTopicsList(topicsList.concat({ topic: topicsInput, priority }));
+    setTopicsInput(""); setPriority("");
   }
 
   // ───────── Generate study plan ONLY ─────────
   function generateFinalStudyPlan() {
-  if (!examDate || topicsList.length === 0) {
-    alert("Add exam date and topics first!");
-    return;
+    if (!examDate || topicsList.length === 0) {
+      alert("Add exam date and topics first!");
+      return;
+    }
+
+    const plan = generateStudyPlan(examDate, topicsList);
+    setStudyPlan(plan);
+
+    // 🔑 Jump to first study week
+    if (plan.length > 0) {
+      const firstDay = plan[0].date.split("-");
+      const d = new Date(
+        Number(firstDay[0]),
+        Number(firstDay[1]) - 1,
+        Number(firstDay[2])
+      );
+
+      const day = d.getDay();
+      const diffToMonday = day === 0 ? -6 : 1 - day;
+      d.setDate(d.getDate() + diffToMonday);
+
+      setCurrentWeekStart(d);
+    }
   }
-
-  const plan = generateStudyPlan(examDate, topicsList);
-  setStudyPlan(plan);
-
-  // 🔑 Jump to first study week
-  if (plan.length > 0) {
-    const firstDay = plan[0].date.split("-");
-    const d = new Date(
-      Number(firstDay[0]),
-      Number(firstDay[1]) - 1,
-      Number(firstDay[2])
-    );
-
-    const day = d.getDay();
-    const diffToMonday = day === 0 ? -6 : 1 - day;
-    d.setDate(d.getDate() + diffToMonday);
-
-    setCurrentWeekStart(d);
-  }
-}
-
 
   // ───────── Add final exam ONLY ─────────
   function addFinalExam() {
@@ -170,12 +169,17 @@ function App() {
       </div>
 
       <input type="text" placeholder="Topic Name" value={topicsInput} onChange={e => setTopicsInput(e.target.value)} />
-      <input type="number" placeholder="Hours Needed" value={hoursNeeded} onChange={e => setHoursNeeded(e.target.value)} />
+      <select value={priority} onChange={e => setPriority(e.target.value)}>
+        <option value="">Select Priority</option>
+        <option value="Low">Low</option>
+        <option value="Medium">Medium</option>
+        <option value="High">High</option>
+      </select>
       <button onClick={addTopic}>Add Topic</button>
 
       <ul>
         {topicsList.map((t, idx) => (
-          <li key={idx}>{t.topic} — {t.hoursNeeded} hour(s)</li>
+          <li key={idx}>{t.topic} — {t.priority} priority</li>
         ))}
       </ul>
 

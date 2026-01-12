@@ -13,34 +13,39 @@ export function generateStudyPlan(examDate, topics) {
   const startDate = new Date(exam);
   startDate.setDate(startDate.getDate() - DAYS_BEFORE_EXAM);
 
-  // ─── Build all study days (day before exam) ───
+  // ─── Build all study days (day before exam, skip weekends) ───
   const days = [];
   const current = new Date(startDate);
 
   while (current < exam) {
     const dayOfWeek = current.getDay();
 
-    if(dayOfWeek !== 0 && dayOfWeek !== 6){
-        days.push(new Date(current));
-
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) { // skip Sunday & Saturday
+      days.push(new Date(current));
     }
-
 
     current.setDate(current.getDate() + 1);
   }
 
+  if (days.length === 0) return studyPlan;
+
+  // ─── Map priority to weight ───
+  const priorityMap = {
+    "High": 3,
+    "Medium": 2,
+    "Low": 1
+  };
+
   // ─── Expand topics by weight ───
   const weightedTopics = [];
-
   for (const t of topics) {
-    const w = t.weight ?? 1;
+    const w = priorityMap[t.priority] ?? 1;
     for (let i = 0; i < w; i++) {
       weightedTopics.push(t.topic);
     }
   }
 
   if (weightedTopics.length === 0) return studyPlan;
-
 
   // ─── Rotate topics evenly across days ───
   let topicIndex = 0;
