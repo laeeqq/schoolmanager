@@ -11,14 +11,21 @@ export function generateStudyPlan(examDate, topics) {
   // ─── Start studying 21 days before exam ───
   const DAYS_BEFORE_EXAM = 21;
   const startDate = new Date(exam);
-  startDate.setDate(exam.getDate() - DAYS_BEFORE_EXAM);
+  startDate.setDate(startDate.getDate() - DAYS_BEFORE_EXAM);
 
   // ─── Build all study days (day before exam) ───
   const days = [];
   const current = new Date(startDate);
 
   while (current < exam) {
-    days.push(new Date(current));
+    const dayOfWeek = current.getDay();
+
+    if(dayOfWeek != 0 && dayOfWeek != 6){
+        days.push(new Date(current));
+
+    }
+
+
     current.setDate(current.getDate() + 1);
   }
 
