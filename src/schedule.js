@@ -20,7 +20,7 @@ export function generateStudyPlan(examDate, topics) {
   while (current < exam) {
     const dayOfWeek = current.getDay();
 
-    if(dayOfWeek != 0 && dayOfWeek != 6){
+    if(dayOfWeek !== 0 && dayOfWeek !== 6){
         days.push(new Date(current));
 
     }
@@ -29,12 +29,25 @@ export function generateStudyPlan(examDate, topics) {
     current.setDate(current.getDate() + 1);
   }
 
+  // ─── Expand topics by weight ───
+  const weightedTopics = [];
+
+  for (const t of topics) {
+    const w = t.weight ?? 1;
+    for (let i = 0; i < w; i++) {
+      weightedTopics.push(t.topic);
+    }
+  }
+
+  if (weightedTopics.length === 0) return studyPlan;
+
+
   // ─── Rotate topics evenly across days ───
   let topicIndex = 0;
 
   for (let i = 0; i < days.length; i++) {
     const day = days[i];
-    const topic = topics[topicIndex % topics.length].topic;
+    const topic = weightedTopics[topicIndex % weightedTopics.length];
 
     const yyyy = day.getFullYear();
     const mm = String(day.getMonth() + 1).padStart(2, "0");
