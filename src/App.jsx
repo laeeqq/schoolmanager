@@ -4,10 +4,7 @@ import Calendar from "./Calender";
 
 function App() {
   // ───────── State ─────────
-  // Store all added classes in a list
   const [classes, setClasses] = useState([]);
-
-  // State for Study Plan
   const [studyPlan, setStudyPlan] = useState([]);
   const [topicsList, setTopicsList] = useState([]);
 
@@ -22,13 +19,14 @@ function App() {
   const [examStartTime, setExamStartTime] = useState("");
   const [examEndTime, setExamEndTime] = useState("");
   const [topicsInput, setTopicsInput] = useState("");
-  const [priority, setPriority] = useState("");
+  const [hoursNeeded, setHoursNeeded] = useState("");
+  const [priority, setPriority] = useState("Medium"); // Added priority
 
   // State for current week
   const [currentWeekStart, setCurrentWeekStart] = useState(() => {
     const today = new Date();
     const day = today.getDay();
-    const diffToMonday = day === 0 ? -6 : 1 - day; // adjust if Sunday
+    const diffToMonday = day === 0 ? -6 : 1 - day;
     const monday = new Date(today);
     monday.setDate(today.getDate() + diffToMonday);
     return monday;
@@ -48,17 +46,13 @@ function App() {
   }
 
   // ───────── Helper functions ─────────
-  // Parse hour from HH:MM string
   const getHour = (timeStr) => parseInt(timeStr.split(":")[0]);
-
-  // Check if a class is on a given day (NO timezone bugs)
   const isClassOnDay = (c, date) => {
     if (!c || !c.date) return false;
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, "0");
     const d = String(date.getDate()).padStart(2, "0");
-    const dayKey = y + "-" + m + "-" + d;
-    return c.date === dayKey;
+    return c.date === `${y}-${m}-${d}`;
   };
 
   // ───────── Add a class ─────────
@@ -67,71 +61,66 @@ function App() {
       alert("Please fill all fields");
       return;
     }
-
-    setClasses(classes.concat({ name, date, time, endTime }));
+    setClasses([...classes, { name, date, time, endTime }]);
     setName(""); setDate(""); setTime(""); setEndTime("");
   }
 
   // ───────── Add a topic ─────────
   function addTopic() {
-    if (!topicsInput || !priority) return;
-    setTopicsList(topicsList.concat({ topic: topicsInput, priority }));
-    setTopicsInput(""); setPriority("");
+    if (!topicsInput || !hoursNeeded) return;
+    setTopicsList([
+      ...topicsList,
+      { topic: topicsInput, hoursNeeded: Number(hoursNeeded), priority }
+    ]);
+    setTopicsInput("");
+    setHoursNeeded("");
+    setPriority("Medium"); // reset
   }
 
-  // ───────── Generate study plan ONLY ─────────
+  // ───────── Generate study plan ─────────
   function generateFinalStudyPlan() {
     if (!examDate || topicsList.length === 0) {
       alert("Add exam date and topics first!");
       return;
     }
-
     const plan = generateStudyPlan(examDate, topicsList);
     setStudyPlan(plan);
 
-    // 🔑 Jump to first study week
     if (plan.length > 0) {
-      const firstDay = plan[0].date.split("-");
-      const d = new Date(
-        Number(firstDay[0]),
-        Number(firstDay[1]) - 1,
-        Number(firstDay[2])
-      );
-
+      const firstDay = plan[0].date.split("-").map(Number);
+      const d = new Date(firstDay[0], firstDay[1] - 1, firstDay[2]);
       const day = d.getDay();
       const diffToMonday = day === 0 ? -6 : 1 - day;
       d.setDate(d.getDate() + diffToMonday);
-
       setCurrentWeekStart(d);
     }
   }
 
-  // ───────── Add final exam ONLY ─────────
+  // ───────── Add final exam ─────────
   function addFinalExam() {
     if (!examDate || !examStartTime || !examEndTime) {
       alert("Add exam date, start time, and end time!");
       return;
     }
-
-    const examEvent = {
-      name: "Final Exam",
-      date: examDate,
-      time: examStartTime,      // start time
-      endTime: examEndTime,     // end time
-      allDay: false,            // now it's a timed event
-    };
-
-    setClasses(classes.concat(examEvent));
+    setClasses([
+      ...classes,
+      {
+        name: "Final Exam",
+        date: examDate,
+        time: examStartTime,
+        endTime: examEndTime,
+        allDay: false
+      }
+    ]);
   }
 
   // ───────── Compute week dates ─────────
-  const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-  const weekDates = weekDays.map((_, idx) => {
+  const weekDays = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  const weekDates = weekDays.map((_, i) => {
     const d = new Date(currentWeekStart);
-    d.setDate(d.getDate() + idx);
+    d.setDate(d.getDate() + i);
     return d;
   });
-
   const hours = Array.from({ length: 24 }, (_, i) => i);
 
   // ───────── RENDER ─────────
@@ -140,14 +129,14 @@ function App() {
       <h1>My School Manager</h1>
 
       {/* Week navigation */}
-      <div style={{ marginBottom: "10px" }}>
+      <div style={{ marginBottom: 10 }}>
         <button onClick={prevWeek}>Previous Week</button>
         <button onClick={nextWeek}>Next Week</button>
       </div>
 
       {/* Add class */}
       <h2>Add a Class</h2>
-      <input type="text" placeholder="Class Name" value={name} onChange={e => setName(e.target.value)} />
+      <input placeholder="Class Name" value={name} onChange={e => setName(e.target.value)} />
       <input type="date" value={date} onChange={e => setDate(e.target.value)} />
       <input type="time" value={time} onChange={e => setTime(e.target.value)} />
       <input type="time" value={endTime} onChange={e => setEndTime(e.target.value)} />
@@ -168,22 +157,27 @@ function App() {
         <input type="time" value={examEndTime} onChange={e => setExamEndTime(e.target.value)} />
       </div>
 
-      <input type="text" placeholder="Topic Name" value={topicsInput} onChange={e => setTopicsInput(e.target.value)} />
+      <input placeholder="Topic Name" value={topicsInput} onChange={e => setTopicsInput(e.target.value)} />
+      <input type="number" placeholder="Hours Needed" value={hoursNeeded} onChange={e => setHoursNeeded(e.target.value)} />
+
+      {/* ───────── Added Priority Selector ───────── */}
       <select value={priority} onChange={e => setPriority(e.target.value)}>
-        <option value="">Select Priority</option>
-        <option value="Low">Low</option>
-        <option value="Medium">Medium</option>
-        <option value="High">High</option>
+        <option value="High">High Priority</option>
+        <option value="Medium">Medium Priority</option>
+        <option value="Low">Low Priority</option>
       </select>
+
       <button onClick={addTopic}>Add Topic</button>
 
       <ul>
         {topicsList.map((t, idx) => (
-          <li key={idx}>{t.topic} — {t.priority} priority</li>
+          <li key={idx}>
+            {t.topic} — {t.hoursNeeded} hour(s) — {t.priority}
+          </li>
         ))}
       </ul>
 
-      {/* Separate buttons */}
+      {/* Buttons */}
       <button onClick={generateFinalStudyPlan}>Generate Study Plan</button>
       <button onClick={addFinalExam}>Add Final Exam</button>
 
