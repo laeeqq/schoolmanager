@@ -2,49 +2,45 @@
 export function generateStudyPlan(examDate, topics) {
   const studyPlan = [];
 
-  // Convert exam date string  parts (timezone safe)
-  const parts = examDate.split("-");
-  const exam = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+  if (!examDate || topics.length === 0) return studyPlan;
 
-  // Minimum study period: 3 weeks
-  const DAYS_BEFORE_EXAMS = 21;
+  // ─── Parse exam date safely (NO timezone bugs) ───
+  const [y, m, d] = examDate.split("-").map(Number);
+  const exam = new Date(y, m - 1, d);
+
+  // ─── Start studying 21 days before exam ───
+  const DAYS_BEFORE_EXAM = 21;
   const startDate = new Date(exam);
-  startDate.setDate(exam.getDate() - DAYS_BEFORE_EXAMS);
+  startDate.setDate(exam.getDate() - DAYS_BEFORE_EXAM);
 
-  // Total study days
-  const totalDays = Math.ceil((exam - startDate) / (1000 * 60 * 60 * 24));
+  // ─── Build all study days (day before exam) ───
+  const days = [];
+  const current = new Date(startDate);
 
-  // Initialize topic trackers
-  const topicMap = topics.map(t => ({
-    topic: t.topic,
-    hoursLeft: t.hoursNeeded
-  }));
+  while (current < exam) {
+    days.push(new Date(current));
+    current.setDate(current.getDate() + 1);
+  }
 
-  // Loop through each day and assign one topic per day
-  for (let dayOffset = 0; dayOffset < totalDays; dayOffset++) {
-    const currentDate = new Date(startDate);
-    currentDate.setDate(startDate.getDate() + dayOffset);
+  // ─── Rotate topics evenly across days ───
+  let topicIndex = 0;
 
-    // Pick next topic with hours left (rotate)
-    const availableTopics = topicMap.filter(t => t.hoursLeft > 0);
-    if (availableTopics.length === 0) break; // all done
+  for (let i = 0; i < days.length; i++) {
+    const day = days[i];
+    const topic = topics[topicIndex % topics.length].topic;
 
-    const topicIndex = dayOffset % availableTopics.length;
-    const currentTopic = availableTopics[topicIndex];
-
-    // Format date YYYY-MM-DD
-    const y = currentDate.getFullYear();
-    const m = String(currentDate.getMonth() + 1).padStart(2, "0");
-    const d = String(currentDate.getDate()).padStart(2, "0");
+    const yyyy = day.getFullYear();
+    const mm = String(day.getMonth() + 1).padStart(2, "0");
+    const dd = String(day.getDate()).padStart(2, "0");
 
     studyPlan.push({
       type: "study",
-      topic: currentTopic.topic,
-      date: `${y}-${m}-${d}`,
-      allDay: true
+      topic,
+      date: `${yyyy}-${mm}-${dd}`,
+      allDay: true,
     });
 
-    currentTopic.hoursLeft--;
+    topicIndex++;
   }
 
   return studyPlan;
